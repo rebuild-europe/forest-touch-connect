@@ -29,34 +29,48 @@ const Connect = () => {
     };
   }, []);
 
-  const startScanning = async () => {
-    setMode("scan");
+  const startScanning = () => {
     setScanResult(null);
     setError("");
     setConnected(false);
 
-    // Wait for DOM element
-    await new Promise((r) => setTimeout(r, 300));
+    // Request camera FIRST (directly in click handler to preserve gesture)
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+      .then((stream) => {
+        // Stop the stream immediately — Html5Qrcode will open its own
+        stream.getTracks().forEach((t) => t.stop());
 
-    try {
-      const scanner = new Html5Qrcode("qr-reader");
-      scannerRef.current = scanner;
+        // Now switch mode so the DOM element renders
+        setMode("scan");
 
-      await scanner.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 220, height: 220 } },
-        (decoded) => {
-          if (decoded.startsWith("forest:")) {
-            scanner.stop().catch(() => {});
-            const partnerId = decoded.replace("forest:", "");
-            handleConnect(partnerId);
-          }
-        },
-        () => {}
-      );
-    } catch (err: any) {
-      setError("Camera access denied. Please allow camera permissions.");
-    }
+        // Use requestAnimationFrame to wait for DOM paint, then start scanner
+        requestAnimationFrame(() => {
+          requestAnimationFrame(async () => {
+            try {
+              const scanner = new Html5Qrcode("qr-reader");
+              scannerRef.current = scanner;
+
+              await scanner.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 220, height: 220 } },
+                (decoded) => {
+                  if (decoded.startsWith("forest:")) {
+                    scanner.stop().catch(() => {});
+                    const partnerId = decoded.replace("forest:", "");
+                    handleConnect(partnerId);
+                  }
+                },
+                () => {}
+              );
+            } catch (err: any) {
+              setError("Could not start scanner. Try again.");
+            }
+          });
+        });
+      })
+      .catch(() => {
+        setError("Camera access denied. Please allow camera permissions in your browser settings.");
+      });
   };
 
   const stopScanning = () => {
