@@ -29,48 +29,32 @@ const Connect = () => {
     };
   }, []);
 
-  const startScanning = () => {
+  const startScanning = async () => {
     setScanResult(null);
     setError("");
     setConnected(false);
+    setMode("scan");
 
-    // Request camera FIRST (directly in click handler to preserve gesture)
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-      .then((stream) => {
-        // Stop the stream immediately — Html5Qrcode will open its own
-        stream.getTracks().forEach((t) => t.stop());
+    try {
+      const scanner = new Html5Qrcode("qr-reader");
+      scannerRef.current = scanner;
 
-        // Now switch mode so the DOM element renders
-        setMode("scan");
-
-        // Use requestAnimationFrame to wait for DOM paint, then start scanner
-        requestAnimationFrame(() => {
-          requestAnimationFrame(async () => {
-            try {
-              const scanner = new Html5Qrcode("qr-reader");
-              scannerRef.current = scanner;
-
-              await scanner.start(
-                { facingMode: "environment" },
-                { fps: 10, qrbox: { width: 220, height: 220 } },
-                (decoded) => {
-                  if (decoded.startsWith("forest:")) {
-                    scanner.stop().catch(() => {});
-                    const partnerId = decoded.replace("forest:", "");
-                    handleConnect(partnerId);
-                  }
-                },
-                () => {}
-              );
-            } catch (err: any) {
-              setError("Could not start scanner. Try again.");
-            }
-          });
-        });
-      })
-      .catch(() => {
-        setError("Camera access denied. Please allow camera permissions in your browser settings.");
-      });
+      await scanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 220, height: 220 } },
+        (decoded) => {
+          if (decoded.startsWith("forest:")) {
+            scanner.stop().catch(() => {});
+            const partnerId = decoded.replace("forest:", "");
+            handleConnect(partnerId);
+          }
+        },
+        () => {}
+      );
+    } catch (err: any) {
+      setError("Camera access denied. Please allow camera permissions in your browser settings.");
+      setMode("show");
+    }
   };
 
   const stopScanning = () => {
@@ -251,9 +235,8 @@ const Connect = () => {
               exit={{ opacity: 0, scale: 0.9 }}
             >
               <div className="relative w-full rounded-2xl overflow-hidden border border-primary/20 bg-card/40">
-                <div id="qr-reader" className="w-full" />
                 {connecting && (
-                  <div className="absolute inset-0 bg-background/80 flex flex-col items-center justify-center">
+                  <div className="absolute inset-0 z-10 bg-background/80 flex flex-col items-center justify-center">
                     <Loader2 className="w-8 h-8 text-primary animate-spin mb-2" />
                     <p className="text-primary font-display">Forming root...</p>
                   </div>
@@ -311,6 +294,12 @@ const Connect = () => {
           </motion.div>
         )}
       </div>
+
+      {/* Always-mounted scanner container — hidden when not scanning */}
+      <div
+        id="qr-reader"
+        className={mode === "scan" && !connected ? "w-full max-w-sm px-6 z-10 rounded-2xl overflow-hidden" : "hidden"}
+      />
 
       <BottomNav />
     </div>
