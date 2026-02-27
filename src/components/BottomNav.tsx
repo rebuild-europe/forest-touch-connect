@@ -1,8 +1,9 @@
-import { Radar, TreePine, Users } from "lucide-react";
+import { Radar, TreePine, Users, QrCode } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const tabs = [
   { path: "/nearby", icon: Radar, label: "Nearby" },
+  { path: "/connect", icon: QrCode, label: "Root" },
   { path: "/groups", icon: Users, label: "Groves" },
   { path: "/profile", icon: TreePine, label: "You" },
 ];

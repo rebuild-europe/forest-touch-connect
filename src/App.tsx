@@ -10,6 +10,7 @@ import Groups from "./pages/Groups";
 import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
 import Chat from "./pages/Chat";
+import Connect from "./pages/Connect";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const AppRoutes = () => (
     <Route path="/nearby" element={<ProtectedRoute><Nearby /></ProtectedRoute>} />
     <Route path="/groups" element={<ProtectedRoute><Groups /></ProtectedRoute>} />
     <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+    <Route path="/connect" element={<ProtectedRoute><Connect /></ProtectedRoute>} />
     <Route path="/chat/:connectionId" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
     <Route path="*" element={<NotFound />} />
   </Routes>
