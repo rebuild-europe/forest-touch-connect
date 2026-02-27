@@ -2,15 +2,20 @@ import { motion } from "framer-motion";
 import { Smartphone } from "lucide-react";
 import Fireflies from "@/components/Fireflies";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 const Landing = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const handleEnter = () => {
+    navigate(user ? "/nearby" : "/auth");
+  };
 
   return (
     <div className="relative min-h-screen gradient-forest flex flex-col items-center justify-center overflow-hidden px-6">
       <Fireflies count={20} />
 
-      {/* Ambient glow */}
       <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-primary/5 blur-[120px] pointer-events-none" />
 
       <motion.div
@@ -19,7 +24,6 @@ const Landing = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1.2, ease: "easeOut" }}
       >
-        {/* Logo */}
         <motion.div
           className="mx-auto mb-8 w-20 h-20 rounded-full border border-primary/30 flex items-center justify-center glow-primary"
           animate={{ scale: [1, 1.05, 1] }}
@@ -50,9 +54,8 @@ const Landing = () => {
           Touch phones. Share presence. Discover kindred spirits.
         </motion.p>
 
-        {/* CTA */}
         <motion.button
-          onClick={() => navigate("/nearby")}
+          onClick={handleEnter}
           className="group relative inline-flex items-center gap-3 px-8 py-4 rounded-full bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 hover:border-primary/50 transition-all duration-500"
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
@@ -66,7 +69,6 @@ const Landing = () => {
         </motion.button>
       </motion.div>
 
-      {/* Bottom hint */}
       <motion.div
         className="absolute bottom-8 text-muted-foreground/40 text-xs text-center"
         initial={{ opacity: 0 }}
